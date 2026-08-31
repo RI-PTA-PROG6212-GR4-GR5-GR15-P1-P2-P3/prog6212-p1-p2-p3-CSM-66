@@ -1,3 +1,4 @@
+# Validates that all Part 1 planning documents are committed before Part 2 begins
 name: Validate Repository Structure
 
 on:
