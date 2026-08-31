@@ -51,6 +51,7 @@ INSERT INTO Results (EnrolmentID, FinishTime, Position, CapturedByUserID) VALUES
 (1, '00:52:30', 4, 1),   -- Sipho's 10km result, captured by Johan
 (2, '00:28:15', 2, 1),   -- Anrich's 5km result, captured by Johan
 (3, '01:55:40', 10, 2);  -- Sipho's 21km result, captured by Lindiwe
--- Note: Enrolment 4 (Anrich, 40km cycle) has no result yet simulates
--- an event that hasn't happened/been captured yet.
+-- Note: Enrolment 4 (Anrich, 40km cycle) intentionally has no matching
+-- row in Results, simulating an event whose results have not yet been
+-- captured by the organiser.
 GO
