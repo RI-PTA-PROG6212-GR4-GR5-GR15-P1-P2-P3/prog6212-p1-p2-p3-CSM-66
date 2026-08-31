@@ -24,6 +24,12 @@ endpoint plan, and the SQL database script.
 - Enter an event by selecting a category
 - View their own enrolments and track their personal results
 
+## Technology Used
+
+- SQL Server Management Studio (SSMS) - database design and scripting
+- GitHub Actions - CI/CD workflow validation
+- Markdown - documentation and endpoint planning
+
 ## Repository Structure
 /docs
 RaceDay_ERD.png - Entity Relationship Diagram
