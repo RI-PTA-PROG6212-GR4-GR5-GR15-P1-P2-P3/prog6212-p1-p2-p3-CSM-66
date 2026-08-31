@@ -62,6 +62,8 @@ CREATE TABLE Enrolments (
     CONSTRAINT UQ_Enrolment UNIQUE (ParticipantID, CategoryID)
 );
 GO
+-- EnrolmentID is UNIQUE below, enforcing a one-to-one relationship
+-- between Enrolments and Results (one result per enrolment).
 -- 6. RESULTS
 CREATE TABLE Results (
     ResultID INT IDENTITY(1,1) PRIMARY KEY,
