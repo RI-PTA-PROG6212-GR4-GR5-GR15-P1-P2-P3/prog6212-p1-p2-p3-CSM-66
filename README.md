@@ -1,3 +1,6 @@
+**Student:** Choeu Molepo
+**Module:** PROG6212
+
 # RaceDay
 
 ## System Description
