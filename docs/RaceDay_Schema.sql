@@ -1,7 +1,7 @@
  --RaceDay Database Schema
 -- Part 1 - Section C: SQL Database Script
 -- Run this in SSMS on a clean SQL Server instance
-
+-- I Added Distance and EventType  to Events after cross-checking Part 2 functional requirements
 
 CREATE DATABASE RaceDayDB;
 GO
