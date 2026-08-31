@@ -23,7 +23,7 @@ jobs:
 
       - name: Check for ERD image (PNG or PDF)
         run: |
-          if ! ls docs/*.png docs/*.PNG docs/*.pdf docs/*.PDF 1> /dev/null 2>&1; then
+          if [ -z "$(find docs -maxdepth 1 -iname '*.png' -o -iname '*.pdf' 2>/dev/null)" ]; then
             echo "ERROR: No ERD image (.png or .pdf) found in /docs."
             exit 1
           fi
@@ -31,7 +31,7 @@ jobs:
 
       - name: Check for endpoint plan document
         run: |
-          if ! ls docs/*.md docs/*.pdf docs/*.MD docs/*.PDF 1> /dev/null 2>&1; then
+          if [ -z "$(find docs -maxdepth 1 -iname '*.md' -o -iname '*.pdf' 2>/dev/null)" ]; then
             echo "ERROR: No endpoint plan document (.md or .pdf) found in /docs."
             exit 1
           fi
@@ -39,7 +39,7 @@ jobs:
 
       - name: Check for SQL script
         run: |
-          if ! ls docs/*.sql 1> /dev/null 2>&1; then
+          if [ -z "$(find docs -maxdepth 1 -iname '*.sql' 2>/dev/null)" ]; then
             echo "ERROR: No SQL script (.sql) found in /docs."
             exit 1
           fi
