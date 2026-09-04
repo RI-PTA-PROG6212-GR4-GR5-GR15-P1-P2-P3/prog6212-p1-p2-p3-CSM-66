@@ -53,6 +53,10 @@ was a planned addition based on the brief's instruction to review all three
 parts before finalising Part 1, not an unexplained deviation from the
 original ERD.
 
+Seed data was chosen to reflect realistic South African road events 
+including a run, a cycle tour, and a marathon across three different
+provinces, to demonstrate the schema working with varied real-world data.
+
 ## CI/CD
 
 A GitHub Actions workflow validates that the `/docs` folder exists and
