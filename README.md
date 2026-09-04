@@ -66,4 +66,4 @@ script) on every push to `main`.
 An unlisted YouTube video walking through the planning documents, ERD
 decisions, endpoint plan choices, and a live run of the SQL script in SSMS
 can be found here:
-**[Watch the video](YT link)**
+**[Watch the video]((https://youtu.be/rZQMX9Lrni4))**
