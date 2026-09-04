@@ -71,3 +71,8 @@ An unlisted YouTube video walking through the planning documents, ERD
 decisions, endpoint plan choices, and a live run of the SQL script in SSMS
 can be found here:
 **[Watch the video]((https://youtu.be/rZQMX9Lrni4))**
+
+## Next Steps
+
+Part 2 will implement this planned API in C#, connect it to the RaceDayDB
+database, and add unit tests with GitHub CI/CD.
