@@ -1,31 +1,26 @@
--- RaceDay Sample Data
+-- RaceDay Sample Data 
 -- Part 1 - Section C: Seed Data
--- Run this AFTER the schema script, on RaceDayDB
-
 USE RaceDayDB;
 GO
 
--- ROLES
-INSERT INTO Roles (RoleName) VALUES
-('Organiser'),
-('Participant');
+-- ORGANISERS (2 required)
+-- Note: PasswordHash values below are placeholders only, not real hashes.
+INSERT INTO Organisers (Name, Email, PasswordHash, CreatedAt) VALUES
+('Johan Pretorius', 'johan@raceday.co.za', 'HashedPassword123', GETDATE()),   -- OrganiserID 1
+('Lindiwe Khumalo', 'lindiwe@raceday.co.za', 'HashedPassword456', GETDATE()); -- OrganiserID 2
 GO
 
--- USERS (2 Organisers, 2 Participants)
--- Note: PasswordHash values below are placeholders only,
--- not real hashes 
-INSERT INTO Users (Name, Email, PasswordHash, RoleID, CreatedAt) VALUES
-('Johan Pretorius', 'johan@raceday.co.za', 'HashedPassword123', 1, GETDATE()),   -- UserID 1, Organiser
-('Lindiwe Khumalo', 'lindiwe@raceday.co.za', 'HashedPassword456', 1, GETDATE()), -- UserID 2, Organiser
-('Sipho Ndlovu', 'sipho@example.com', 'HashedPassword789', 2, GETDATE()),        -- UserID 3, Participant
-('Anrich Botha', 'anrich@example.com', 'HashedPassword321', 2, GETDATE());       -- UserID 4, Participant
+-- PARTICIPANTS (2 required)
+INSERT INTO Participants (Name, Email, PasswordHash, CreatedAt) VALUES
+('Choeu Molepo', 'choeu@gmail.com', 'HashedPassword789', GETDATE()),  -- ParticipantID 1
+('Anrich Botha', 'anrich@gmail.com', 'HashedPassword321', GETDATE()); -- ParticipantID 2
 GO
 
--- EVENTS (3 events, run by the 2 organisers)
-INSERT INTO Events (OrganiserID, Name, Description, EventDate, Location, CreatedAt, Distance, EventType) VALUES
-(1, 'Pretoria Park Run Challenge', 'Community 5km/10km road running event through Pretoria park routes.', '2026-09-12', 'Pretoria, Gauteng', GETDATE(), 10.00, 'Run'),
-(1, 'Polokwane City Cycle Tour', 'Road cycling event through Polokwane city and surrounds.', '2026-10-03', 'Polokwane, Limpopo', GETDATE(), 80.00, 'Cycle'),
-(2, 'Soweto Heritage Marathon', 'Annual road marathon celebrating Soweto heritage routes.', '2026-11-15', 'Soweto, Gauteng', GETDATE(), 42.20, 'Run');
+-- EVENTS (3 required, run by the 2 organisers)
+INSERT INTO Events (OrganiserID, Name, Description, EventDate, Location, Distance, EventType) VALUES
+(1, 'Pretoria Park Run Challenge', 'Community 5km/10km road running event through Pretoria park routes.', '2026-09-12', 'Pretoria, Gauteng', 10.00, 'Run'),
+(1, 'Polokwane City Cycle Tour', 'Road cycling event through Polokwane city and surrounds.', '2026-10-03', 'Polokwane, Limpopo', 80.00, 'Cycle'),
+(2, 'Soweto Heritage Marathon', 'Annual road marathon celebrating Soweto heritage routes.', '2026-11-15', 'Soweto, Gauteng', 42.20, 'Run');
 GO
 
 -- CATEGORIES (per event)
@@ -40,18 +35,19 @@ GO
 
 -- ENROLMENTS (participants entering categories)
 INSERT INTO Enrolments (ParticipantID, CategoryID, EnrolmentDate, Status) VALUES
-(3, 2, GETDATE(), 'Registered'),  -- Sipho -> 10km Challenge
-(4, 1, GETDATE(), 'Registered'),  -- Anrich -> 5km Fun Run
-(3, 5, GETDATE(), 'Registered'),  -- Sipho -> 21km Half Marathon
-(4, 3, GETDATE(), 'Registered');  -- Anrich -> 40km Road Cycle
+(1, 2, GETDATE(), 'Registered'),  -- Choeu -> 10km Challenge
+(2, 1, GETDATE(), 'Registered'),  -- Anrich -> 5km Fun Run
+(1, 5, GETDATE(), 'Registered'),  -- Choeu -> 21km Half Marathon
+(2, 3, GETDATE(), 'Registered');  -- Anrich -> 40km Road Cycle
 GO
 
 -- RESULTS (captured by organisers, one per enrolment)
-INSERT INTO Results (EnrolmentID, FinishTime, Position, CapturedByUserID) VALUES
-(1, '00:52:30', 4, 1),   -- Sipho's 10km result, captured by Johan
+INSERT INTO Results (EnrolmentID, FinishTime, Position, CapturedByOrganiserID) VALUES
+(1, '00:52:30', 4, 1),   -- Choeu's 10km result, captured by Johan
 (2, '00:28:15', 2, 1),   -- Anrich's 5km result, captured by Johan
-(3, '01:55:40', 10, 2);  -- Sipho's 21km result, captured by Lindiwe
+(3, '01:55:40', 10, 2);  -- Choeu's 21km result, captured by Lindiwe
 -- Note: Enrolment 4 (Anrich, 40km cycle) intentionally has no matching
 -- row in Results, simulating an event whose results have not yet been
 -- captured by the organiser.
 GO
+
