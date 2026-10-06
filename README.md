@@ -57,6 +57,8 @@ Seed data was chosen to reflect realistic South African road events
 including a run, a cycle tour, and a marathon across three different
 provinces, to demonstrate the schema working with varied real-world data.
 
+Following lecturer feedback, the database design was revised so that Organisers and Participants are two separate entities, rather than a single Users table with a RoleID. This prevents a single account from holding both roles, and means Organiser accounts cannot be created through public self-registration — only Participant accounts can. Organiser accounts are provisioned separately (reflected in the seed data).
+
 ## CI/CD
 
 A GitHub Actions workflow validates that the `/docs` folder exists and
