@@ -1,0 +1,25 @@
+name: Part 2 - Build and Test API
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build the API
+        run: dotnet build Part2/RaceDayAPI/RaceDayAPI.csproj --configuration Release
+
+      - name: Run all unit tests
+        run: dotnet test Part2/RaceDayAPI.Tests/RaceDayAPI.Tests.csproj --configuration Release --verbosity normal
