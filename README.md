@@ -158,4 +158,4 @@ The workflow `.github/workflows/part2-ci.yml` builds the API and runs all unit t
 
 An unlisted YouTube video demonstrating the running API, the code structure, the endpoints, authentication and the unit tests:
 
-**[Watch the video](ytlink)**
+**[Watch the video](https://youtu.be/3psF5NeXD8Y)**
