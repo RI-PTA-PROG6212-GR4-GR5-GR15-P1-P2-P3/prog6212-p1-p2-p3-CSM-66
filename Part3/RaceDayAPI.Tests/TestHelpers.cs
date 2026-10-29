@@ -112,7 +112,7 @@ public static class TestHelpers
             ParticipantId = participantId,
             CategoryId = categoryId,
             EnrolmentDate = DateTime.Now,
-            Status = "Registered"
+            Status = "Confirmed"
         };
         ctx.Enrolments.Add(enrolment);
         ctx.SaveChanges();

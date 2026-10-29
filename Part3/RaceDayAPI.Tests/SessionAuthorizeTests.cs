@@ -102,6 +102,7 @@ public class SessionAuthorizeTests
     [InlineData(typeof(ProfileController), nameof(ProfileController.UpdateParticipant), Roles.Participant)]
     [InlineData(typeof(ProfileController), nameof(ProfileController.GetOrganiser), Roles.Organiser)]
     [InlineData(typeof(ProfileController), nameof(ProfileController.UpdateOrganiser), Roles.Organiser)]
+    [InlineData(typeof(EventsController), nameof(EventsController.GetMine), Roles.Organiser)]
     public void ProtectedEndpoint_EnforcesItsRole(Type controllerType, string methodName, string requiredRole)
     {
         var attribute = controllerType.GetMethod(methodName)!

@@ -31,7 +31,7 @@ public class EnrolmentsControllerTests
         var saved = ctx.Enrolments.Single();
         Assert.Equal(participant.ParticipantId, saved.ParticipantId);
         Assert.Equal(category.CategoryId, saved.CategoryId);
-        Assert.Equal("Registered", saved.Status);
+        Assert.Equal("Confirmed", saved.Status);
     }
 
     [Fact]
