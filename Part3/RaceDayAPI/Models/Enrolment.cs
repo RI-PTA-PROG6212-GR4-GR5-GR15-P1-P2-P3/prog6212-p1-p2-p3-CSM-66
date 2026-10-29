@@ -10,8 +10,9 @@ public class Enrolment
 
     public DateTime EnrolmentDate { get; set; }
 
+    // Confirmed when they enrol, Completed once their result is captured
     [Required, MaxLength(20)]
-    public string Status { get; set; } = "Registered";
+    public string Status { get; set; } = "Confirmed";
 
     public Participant? Participant { get; set; }
     public Category? Category { get; set; }

@@ -22,7 +22,7 @@ public class RaceDayContext : DbContext
         modelBuilder.Entity<Organiser>().HasIndex(o => o.Email).IsUnique();
         modelBuilder.Entity<Participant>().HasIndex(p => p.Email).IsUnique();
 
-        // a participant can only enrol once per category (same as UQ_Enrolment in the SQL script)
+        // a participant can only enrol once per category
         modelBuilder.Entity<Enrolment>()
             .HasIndex(e => new { e.ParticipantId, e.CategoryId })
             .IsUnique();
@@ -38,15 +38,15 @@ public class RaceDayContext : DbContext
             .WithMany(o => o.CapturedResults)
             .HasForeignKey(r => r.CapturedByOrganiserId);
 
-        // defaults, same as the SQL script
+        // defaults
         modelBuilder.Entity<Organiser>().Property(o => o.CreatedAt).HasDefaultValueSql("GETDATE()");
         modelBuilder.Entity<Participant>().Property(p => p.CreatedAt).HasDefaultValueSql("GETDATE()");
         modelBuilder.Entity<Event>().Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
         modelBuilder.Entity<Event>().Property(e => e.EventType).HasDefaultValue("Run");
         modelBuilder.Entity<Enrolment>().Property(e => e.EnrolmentDate).HasDefaultValueSql("GETDATE()");
-        modelBuilder.Entity<Enrolment>().Property(e => e.Status).HasDefaultValue("Registered");
+        modelBuilder.Entity<Enrolment>().Property(e => e.Status).HasDefaultValue("Confirmed");
 
-        // no cascade deletes, matches the Part 1 SQL (and avoids SQL Server's multiple cascade path error)
+        // no cascade deletes, avoids SQL Server's multiple cascade path error
         foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(t => t.GetForeignKeys()))
         {
             fk.DeleteBehavior = DeleteBehavior.Restrict;
