@@ -20,25 +20,77 @@ public class EventsController : ControllerBase
     }
 
     /// <summary>
-    /// Lists all upcoming events. Public, no login needed.
+    /// Lists upcoming events, with optional filters. Public, no login needed.
     /// </summary>
+    /// <remarks>
+    /// Optional query values: search (matches name or description), type (Run, Walk or Cycle) and location.
+    /// </remarks>
     [HttpGet]
     [ProducesResponseType(typeof(List<EventResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAll(string? search = null, string? type = null, string? location = null)
     {
+        var query = _context.Events
+            .Include(e => e.Organiser)
+            .Where(e => e.EventDate >= DateTime.Today);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(e => e.Name.Contains(term) || (e.Description != null && e.Description.Contains(term)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            var normalised = NormaliseType(type);
+            if (normalised == null)
+                return BadRequest(new { message = "Event type must be Run, Walk or Cycle." });
+
+            query = query.Where(e => e.EventType == normalised);
+        }
+
+        if (!string.IsNullOrWhiteSpace(location))
+        {
+            var place = location.Trim();
+            query = query.Where(e => e.Location.Contains(place));
+        }
+
+        var events = await query.OrderBy(e => e.EventDate).ToListAsync();
+        return Ok(events.Select(e => MapEvent(e, false)));
+    }
+
+    /// <summary>
+    /// Lists every event the logged in organiser created (past and upcoming) with the total enrolments for each. Organisers only.
+    /// </summary>
+    [HttpGet("mine")]
+    [SessionAuthorize(Roles.Organiser)]
+    [ProducesResponseType(typeof(List<EventResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetMine()
+    {
+        var organiserId = HttpContext.Session.GetInt32(SessionKeys.UserId)!.Value;
+
         var events = await _context.Events
             .Include(e => e.Organiser)
-            .Where(e => e.EventDate >= DateTime.Today)
+            .Include(e => e.Categories)
+            .ThenInclude(c => c.Enrolments)
+            .Where(e => e.OrganiserId == organiserId)
             .OrderBy(e => e.EventDate)
             .ToListAsync();
 
-        return Ok(events.Select(e => MapEvent(e, false)));
+        return Ok(events.Select(e =>
+        {
+            var response = MapEvent(e, false);
+            response.TotalEnrolments = e.Categories.Sum(c => c.Enrolments.Count);
+            return response;
+        }));
     }
 
     /// <summary>
     /// Returns one event with all of its categories. Public, no login needed.
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
@@ -97,7 +149,7 @@ public class EventsController : ControllerBase
     /// <summary>
     /// Updates an event. Only the organiser who created it can do this.
     /// </summary>
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     [SessionAuthorize(Roles.Organiser)]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -135,7 +187,7 @@ public class EventsController : ControllerBase
     /// <remarks>
     /// If anyone has already enrolled in one of its categories the delete is refused (409).
     /// </remarks>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     [SessionAuthorize(Roles.Organiser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

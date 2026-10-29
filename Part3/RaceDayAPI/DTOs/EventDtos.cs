@@ -36,6 +36,9 @@ public class EventResponse
     public decimal Distance { get; set; }
     public string EventType { get; set; } = string.Empty;
 
+    // only filled in on the organiser's "my events" list
+    public int? TotalEnrolments { get; set; }
+
     // only filled in when you fetch a single event
     public List<CategoryResponse>? Categories { get; set; }
 }
