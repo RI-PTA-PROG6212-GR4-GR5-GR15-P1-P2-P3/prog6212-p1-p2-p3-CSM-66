@@ -58,7 +58,7 @@ public class EnrolmentsController : ControllerBase
             ParticipantId = participantId,
             CategoryId = request.CategoryId,
             EnrolmentDate = DateTime.Now,
-            Status = "Registered"
+            Status = EnrolmentStatus.Confirmed
         };
 
         _context.Enrolments.Add(enrolment);
@@ -83,6 +83,7 @@ public class EnrolmentsController : ControllerBase
 
         var enrolments = await _context.Enrolments
             .Include(e => e.Participant)
+            .Include(e => e.Result)
             .Include(e => e.Category)
             .ThenInclude(c => c!.Event)
             .Where(e => e.ParticipantId == participantId)
@@ -95,7 +96,7 @@ public class EnrolmentsController : ControllerBase
     /// <summary>
     /// Lists every enrolment for one event. Only the organiser who owns the event.
     /// </summary>
-    [HttpGet("events/{eventId}/enrolments")]
+    [HttpGet("events/{eventId:int}/enrolments")]
     [SessionAuthorize(Roles.Organiser)]
     [ProducesResponseType(typeof(List<EnrolmentResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -113,6 +114,7 @@ public class EnrolmentsController : ControllerBase
 
         var enrolments = await _context.Enrolments
             .Include(e => e.Participant)
+            .Include(e => e.Result)
             .Include(e => e.Category)
             .ThenInclude(c => c!.Event)
             .Where(e => e.Category!.EventId == eventId)
@@ -133,6 +135,9 @@ public class EnrolmentsController : ControllerBase
         EventName = e.Category?.Event?.Name ?? string.Empty,
         EventDate = e.Category?.Event?.EventDate ?? default,
         EnrolmentDate = e.EnrolmentDate,
-        Status = e.Status
+        Status = e.Status,
+        ResultCaptured = e.Result != null,
+        FinishTime = e.Result?.FinishTime,
+        Position = e.Result?.Position
     };
 }

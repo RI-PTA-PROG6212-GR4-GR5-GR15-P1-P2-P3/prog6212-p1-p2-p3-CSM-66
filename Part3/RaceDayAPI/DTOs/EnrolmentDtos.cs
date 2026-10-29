@@ -20,6 +20,11 @@ public class EnrolmentResponse
     public DateTime EventDate { get; set; }
     public DateTime EnrolmentDate { get; set; }
     public string Status { get; set; } = string.Empty;
+
+    // so the results page knows who still needs a result
+    public bool ResultCaptured { get; set; }
+    public TimeSpan? FinishTime { get; set; }
+    public int? Position { get; set; }
 }
 
 public class ResultRequest
@@ -41,8 +46,13 @@ public class ResultResponse
     public int EnrolmentId { get; set; }
     public int EventId { get; set; }
     public string EventName { get; set; } = string.Empty;
+    public DateTime EventDate { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public TimeSpan? FinishTime { get; set; }
     public int? Position { get; set; }
+
+    // how many people have a result in the same category ("4th out of 12")
+    public int TotalFinishers { get; set; }
+
     public int CapturedByOrganiserId { get; set; }
 }

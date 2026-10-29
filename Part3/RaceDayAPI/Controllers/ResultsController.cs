@@ -25,6 +25,7 @@ public class ResultsController : ControllerBase
     /// <remarks>
     /// Send enrolmentId, finishTime (hh:mm:ss, e.g. "00:52:30") and position.
     /// Only the organiser who owns the event can capture its results, and each enrolment gets one result (409 if it already has one).
+    /// Capturing a result marks the enrolment as Completed.
     /// </remarks>
     [HttpPost]
     [SessionAuthorize(Roles.Organiser)]
@@ -58,16 +59,23 @@ public class ResultsController : ControllerBase
             CapturedByOrganiserId = organiserId
         };
 
+        // once there's a result the enrolment is done
+        enrolment.Status = EnrolmentStatus.Completed;
+
         _context.Results.Add(result);
         await _context.SaveChangesAsync();
 
         result.Enrolment = enrolment;
-        return StatusCode(StatusCodes.Status201Created, MapResult(result));
+        var total = await _context.Results.CountAsync(r => r.Enrolment!.CategoryId == enrolment.CategoryId);
+        return StatusCode(StatusCodes.Status201Created, MapResult(result, total));
     }
 
     /// <summary>
     /// Lists the logged in participant's own results across all events they entered.
     /// </summary>
+    /// <remarks>
+    /// Each result includes totalFinishers, the number of people with a result in the same category.
+    /// </remarks>
     [HttpGet("me")]
     [SessionAuthorize(Roles.Participant)]
     [ProducesResponseType(typeof(List<ResultResponse>), StatusCodes.Status200OK)]
@@ -85,18 +93,28 @@ public class ResultsController : ControllerBase
             .OrderByDescending(r => r.Enrolment!.Category!.Event!.EventDate)
             .ToListAsync();
 
-        return Ok(results.Select(MapResult));
+        // one query for all the "out of N finishers" numbers
+        var categoryIds = results.Select(r => r.Enrolment!.CategoryId).Distinct().ToList();
+        var totals = await _context.Results
+            .Where(r => categoryIds.Contains(r.Enrolment!.CategoryId))
+            .GroupBy(r => r.Enrolment!.CategoryId)
+            .Select(g => new { CategoryId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CategoryId, x => x.Count);
+
+        return Ok(results.Select(r => MapResult(r, totals.GetValueOrDefault(r.Enrolment!.CategoryId))));
     }
 
-    private static ResultResponse MapResult(Result r) => new()
+    private static ResultResponse MapResult(Result r, int totalFinishers) => new()
     {
         ResultId = r.ResultId,
         EnrolmentId = r.EnrolmentId,
         EventId = r.Enrolment?.Category?.EventId ?? 0,
         EventName = r.Enrolment?.Category?.Event?.Name ?? string.Empty,
+        EventDate = r.Enrolment?.Category?.Event?.EventDate ?? default,
         CategoryName = r.Enrolment?.Category?.Name ?? string.Empty,
         FinishTime = r.FinishTime,
         Position = r.Position,
+        TotalFinishers = totalFinishers,
         CapturedByOrganiserId = r.CapturedByOrganiserId
     };
 }
