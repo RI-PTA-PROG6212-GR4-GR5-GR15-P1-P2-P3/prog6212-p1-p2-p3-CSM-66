@@ -18,4 +18,7 @@ public class ProfileResponse
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+
+    // only participants have one
+    public string? ProfilePictureUrl { get; set; }
 }

@@ -237,6 +237,7 @@ public class EventsController : ControllerBase
         Location = e.Location,
         Distance = e.Distance,
         EventType = e.EventType,
+        BannerUrl = e.BannerUrl,
         Categories = includeCategories
             ? e.Categories.Select(c => new CategoryResponse
             {

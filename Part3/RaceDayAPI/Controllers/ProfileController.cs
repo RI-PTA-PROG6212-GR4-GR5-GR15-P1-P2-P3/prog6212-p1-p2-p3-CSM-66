@@ -4,6 +4,7 @@ using RaceDayAPI.Data;
 using RaceDayAPI.DTOs;
 using RaceDayAPI.Filters;
 using RaceDayAPI.Helpers;
+using RaceDayAPI.Models;
 
 namespace RaceDayAPI.Controllers;
 
@@ -34,14 +35,7 @@ public class ProfileController : ControllerBase
         if (p == null)
             return NotFound(new { message = "Profile not found." });
 
-        return Ok(new ProfileResponse
-        {
-            UserId = p.ParticipantId,
-            Name = p.Name,
-            Email = p.Email,
-            Role = Roles.Participant,
-            CreatedAt = p.CreatedAt
-        });
+        return Ok(ToResponse(p));
     }
 
     /// <summary>
@@ -76,14 +70,7 @@ public class ProfileController : ControllerBase
         p.Email = email;
         await _context.SaveChangesAsync();
 
-        return Ok(new ProfileResponse
-        {
-            UserId = p.ParticipantId,
-            Name = p.Name,
-            Email = p.Email,
-            Role = Roles.Participant,
-            CreatedAt = p.CreatedAt
-        });
+        return Ok(ToResponse(p));
     }
 
     /// <summary>
@@ -102,14 +89,7 @@ public class ProfileController : ControllerBase
         if (o == null)
             return NotFound(new { message = "Profile not found." });
 
-        return Ok(new ProfileResponse
-        {
-            UserId = o.OrganiserId,
-            Name = o.Name,
-            Email = o.Email,
-            Role = Roles.Organiser,
-            CreatedAt = o.CreatedAt
-        });
+        return Ok(ToResponse(o));
     }
 
     /// <summary>
@@ -144,13 +124,25 @@ public class ProfileController : ControllerBase
         o.Email = email;
         await _context.SaveChangesAsync();
 
-        return Ok(new ProfileResponse
-        {
-            UserId = o.OrganiserId,
-            Name = o.Name,
-            Email = o.Email,
-            Role = Roles.Organiser,
-            CreatedAt = o.CreatedAt
-        });
+        return Ok(ToResponse(o));
     }
+
+    private static ProfileResponse ToResponse(Participant p) => new()
+    {
+        UserId = p.ParticipantId,
+        Name = p.Name,
+        Email = p.Email,
+        Role = Roles.Participant,
+        CreatedAt = p.CreatedAt,
+        ProfilePictureUrl = p.ProfilePictureUrl
+    };
+
+    private static ProfileResponse ToResponse(Organiser o) => new()
+    {
+        UserId = o.OrganiserId,
+        Name = o.Name,
+        Email = o.Email,
+        Role = Roles.Organiser,
+        CreatedAt = o.CreatedAt
+    };
 }
