@@ -15,6 +15,10 @@ public class Participant
     [Required, MaxLength(255)]
     public string PasswordHash { get; set; } = string.Empty;
 
+    // link to the profile picture in Azure Blob Storage
+    [MaxLength(500)]
+    public string? ProfilePictureUrl { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Enrolment> Enrolments { get; set; } = new List<Enrolment>();

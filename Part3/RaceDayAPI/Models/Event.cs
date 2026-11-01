@@ -27,6 +27,10 @@ public class Event
     [Required, MaxLength(20)]
     public string EventType { get; set; } = "Run";
 
+    // link to the banner image in Azure Blob Storage
+    [MaxLength(500)]
+    public string? BannerUrl { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public Organiser? Organiser { get; set; }
