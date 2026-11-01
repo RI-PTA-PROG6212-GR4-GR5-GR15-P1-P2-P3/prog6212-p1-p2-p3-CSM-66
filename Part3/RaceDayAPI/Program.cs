@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using RaceDayAPI.Data;
+using RaceDayAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<RaceDayContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Azure Blob Storage, all file handling goes through this service
+builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
 
 // session setup, this is how we remember who's logged in and their role
 builder.Services.AddDistributedMemoryCache();
