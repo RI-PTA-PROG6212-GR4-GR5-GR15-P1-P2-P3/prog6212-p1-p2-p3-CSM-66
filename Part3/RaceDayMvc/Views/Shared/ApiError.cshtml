@@ -1,0 +1,13 @@
+﻿@model string?
+@{
+    ViewData["Title"] = "Service unavailable";
+}
+
+<div class="container rd-center-page">
+    <div class="rd-notice">
+        <div class="rd-notice-icon">📡</div>
+        <h2>We hit a snag</h2>
+        <p class="text-muted">@(Model ?? "We can't reach the RaceDay service right now. Please try again in a moment.")</p>
+        <a class="btn rd-btn" href="javascript:location.reload()">Try again</a>
+    </div>
+</div>

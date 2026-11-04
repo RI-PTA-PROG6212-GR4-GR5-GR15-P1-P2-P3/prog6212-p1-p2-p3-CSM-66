@@ -1,0 +1,35 @@
+﻿@model EventItem
+@{
+    var icon = Model.EventType switch
+    {
+        "Cycle" => "🚴",
+        "Walk" => "🚶",
+        _ => "🏃"
+    };
+}
+
+<div class="col-md-6 col-lg-4">
+    <div class="card rd-event-card h-100">
+        @if (!string.IsNullOrEmpty(Model.BannerUrl))
+        {
+            <img src="@Model.BannerUrl" class="rd-event-banner" alt="Banner for @Model.Name" />
+        }
+        else
+        {
+            <div class="rd-event-banner rd-banner-@Model.EventType.ToLower()">@icon</div>
+        }
+
+        <div class="card-body">
+            <span class="rd-type-pill">@Model.EventType</span>
+            <h5 class="mt-2 mb-1">@Model.Name</h5>
+            <p class="rd-meta mb-2">
+                📅 @Model.EventDate.ToString("dd MMM yyyy") &nbsp; 📍 @Model.Location &nbsp; 🏁 @Model.Distance.ToString("0.##") km
+            </p>
+            <p class="mb-0">@(Model.Description is { Length: > 110 } d ? d[..110] + "…" : Model.Description)</p>
+        </div>
+
+        <div class="card-footer bg-white border-0 pb-3">
+            <a class="btn rd-btn w-100" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId">View event</a>
+        </div>
+    </div>
+</div>
