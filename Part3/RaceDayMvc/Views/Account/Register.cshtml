@@ -1,0 +1,88 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container rd-auth">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card rd-card p-4">
+                <h2 class="rd-title">Join RaceDay</h2>
+                <p class="text-muted">Create an account to enter events or run your own.</p>
+
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label d-block">I'm registering as</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" asp-for="Role" value="Participant" id="roleParticipant" />
+                            <label class="btn rd-btn-toggle" for="roleParticipant">Participant</label>
+                            <input type="radio" class="btn-check" asp-for="Role" value="Organiser" id="roleOrganiser" />
+                            <label class="btn rd-btn-toggle" for="roleOrganiser">Organiser</label>
+                        </div>
+                        <span asp-validation-for="Role" class="field-validation-error"></span>
+                    </div>
+
+                    <div id="organiserCodeBox" class="mb-3 @(Model.Role == "Organiser" ? "" : "d-none")">
+                        <label asp-for="OrganiserAccessCode" class="form-label"></label>
+                        <input asp-for="OrganiserAccessCode" class="form-control" autocomplete="off" />
+                        <div class="form-text">Organiser accounts need the access code from the RaceDay team.</div>
+                        <span asp-validation-for="OrganiserAccessCode" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" autocomplete="name" required />
+                        <span asp-validation-for="Name" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" required />
+                        <span asp-validation-for="Email" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" autocomplete="new-password" minlength="8" required />
+                            <div class="form-text">At least 8 characters.</div>
+                            <span asp-validation-for="Password" class="field-validation-error"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" required />
+                            <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn rd-btn w-100">Create account</button>
+                </form>
+
+                <p class="text-center text-muted mt-3 mb-0">
+                    Already have an account? <a asp-action="Login">Log in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // the access code box only matters for organisers
+        (function () {
+            var box = document.getElementById('organiserCodeBox');
+            var radios = document.querySelectorAll('input[name="Role"]');
+            if (!box || !radios.length) return;
+
+            function update() {
+                var chosen = document.querySelector('input[name="Role"]:checked');
+                box.classList.toggle('d-none', !chosen || chosen.value !== 'Organiser');
+            }
+
+            radios.forEach(function (r) { r.addEventListener('change', update); });
+            update();
+        })();
+    </script>
+}
