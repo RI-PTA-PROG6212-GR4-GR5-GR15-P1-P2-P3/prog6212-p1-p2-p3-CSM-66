@@ -1,8 +1,62 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Upcoming events";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<section class="rd-hero">
+    <div class="container">
+        <h1>Find your next <span>start line</span></h1>
+        <p>Runs, walks and cycle tours across South Africa. Pick an event, choose a category and you're in.</p>
+    </div>
+</section>
+
+<div class="container">
+    <form method="get" asp-controller="Home" asp-action="Index" class="rd-filter mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Event name or keyword" />
+            </div>
+            <div class="col-md-3">
+                <label for="type" class="form-label">Type</label>
+                <select id="type" name="type" class="form-select">
+                    <option value="">All types</option>
+                    <option value="Run" selected="@(Model.Type == "Run")">Run</option>
+                    <option value="Walk" selected="@(Model.Type == "Walk")">Walk</option>
+                    <option value="Cycle" selected="@(Model.Type == "Cycle")">Cycle</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="location" class="form-label">Location</label>
+                <input id="location" name="location" value="@Model.Location" class="form-control" placeholder="Town or province" />
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn rd-btn flex-fill">Filter</button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Clear filters">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Problem != null)
+    {
+        <div class="alert alert-warning">@Model.Problem</div>
+    }
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="rd-notice">
+            <div class="rd-notice-icon">🏁</div>
+            <h2>No events found</h2>
+            <p class="text-muted mb-0">Nothing matches right now. Try clearing the filters, or check back soon.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var ev in Model.Events)
+            {
+                <partial name="_EventCard" model="ev" />
+            }
+        </div>
+    }
 </div>
