@@ -1,3 +1,5 @@
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 using RaceDayMvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +32,17 @@ builder.Services.AddHttpClient<ApiClient>(client =>
 });
 
 var app = builder.Build();
+
+// one fixed culture, so numbers and dates behave the same on every machine and inside Docker
+var culture = new CultureInfo("en-GB");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(culture),
+    SupportedCultures = new List<CultureInfo> { culture },
+    SupportedUICultures = new List<CultureInfo> { culture }
+});
 
 // friendly error pages instead of raw errors, same in development and in Docker
 app.UseExceptionHandler("/Home/Error");
