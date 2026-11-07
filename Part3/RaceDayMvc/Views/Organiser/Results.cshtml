@@ -1,0 +1,86 @@
+﻿@model EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Results";
+    var ev = Model.SelectedEvent;
+    var captured = Model.Enrolments.Count(x => x.ResultCaptured);
+}
+
+<div class="container py-4">
+    <h1 class="rd-title">Results entry</h1>
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="rd-notice">
+            <div class="rd-notice-icon">🏁</div>
+            <h2>No events yet</h2>
+            <p class="text-muted">Create an event first. Once people have entered, you can capture their results here.</p>
+            <a class="btn rd-btn" asp-action="CreateEvent">Create an event</a>
+        </div>
+    }
+    else
+    {
+        <partial name="_EventPicker" model="Model" />
+
+        @if (ev != null)
+        {
+            <div class="mb-3">
+                <h4 class="mb-0">@ev.Name</h4>
+                <div class="rd-meta">📅 @ev.EventDate.ToString("dd MMM yyyy") &nbsp; 🏁 <strong>@captured</strong> of <strong>@Model.Enrolments.Count</strong> results captured</div>
+            </div>
+        }
+
+        @if (Model.Enrolments.Count == 0)
+        {
+            <div class="rd-notice">
+                <div class="rd-notice-icon">👟</div>
+                <h2>Nobody has entered yet</h2>
+                <p class="text-muted mb-0">There's nobody to capture results for until participants enter this event.</p>
+            </div>
+        }
+        else
+        {
+            <div class="card rd-card">
+                <div class="table-responsive">
+                    <table class="table rd-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Finish time and position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var e in Model.Enrolments)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@e.ParticipantName</td>
+                                    <td>@e.CategoryName</td>
+                                    <td><partial name="_StatusBadge" model="e.Status" /></td>
+                                    <td>
+                                        @if (e.ResultCaptured)
+                                        {
+                                            <span class="fw-semibold">✅ #@e.Position</span>
+                                            <span class="text-muted">&nbsp;@e.FinishTime?.ToString("c")</span>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="CaptureResult" method="post" class="d-flex flex-wrap gap-2 align-items-center">
+                                                <input type="hidden" name="EnrolmentId" value="@e.EnrolmentId" />
+                                                <input type="hidden" name="EventId" value="@e.EventId" />
+                                                <input name="FinishTime" class="form-control form-control-sm" style="width:120px" placeholder="hh:mm:ss"
+                                                       pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]" title="Enter the time as hh:mm:ss, like 01:45:30" required />
+                                                <input name="Position" type="number" min="1" max="100000" class="form-control form-control-sm" style="width:90px" placeholder="Pos" required />
+                                                <button type="submit" class="btn btn-sm rd-btn">Save</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>
