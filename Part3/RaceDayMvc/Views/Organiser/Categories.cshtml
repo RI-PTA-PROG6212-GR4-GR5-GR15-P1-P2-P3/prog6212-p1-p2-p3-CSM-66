@@ -1,0 +1,76 @@
+﻿@model CategoriesPageViewModel
+@{
+    ViewData["Title"] = "Categories";
+    var ev = Model.Event;
+}
+
+<div class="container py-4">
+    <a asp-action="Events" class="text-decoration-none">&larr; Back to my events</a>
+
+    <div class="mt-2 mb-4">
+        <h1 class="rd-title mb-0">Categories</h1>
+        <div class="rd-meta">@ev.Name &nbsp; 📅 @ev.EventDate.ToString("dd MMM yyyy") &nbsp; 📍 @ev.Location</div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card rd-card">
+                @if (Model.Categories.Count == 0)
+                {
+                    <div class="p-4 text-center">
+                        <div class="rd-notice-icon">🏷️</div>
+                        <h4>No categories yet</h4>
+                        <p class="text-muted mb-0">Add one on the right, like 10km, 21km or Under 20. Participants pick from these when they enter.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table rd-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Distance</th>
+                                    <th>Price</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@c.Name</td>
+                                        <td>@c.Distance.ToString("0.##") km</td>
+                                        <td>R @c.Price.ToString("0.00")</td>
+                                        <td class="text-end text-nowrap">
+                                            <a class="btn btn-sm rd-btn-dark" asp-action="EditCategory" asp-route-id="@c.CategoryId" asp-route-eventId="@ev.EventId">Edit</a>
+                                            <form asp-action="DeleteCategory" asp-route-id="@c.CategoryId" asp-route-eventId="@ev.EventId" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this category?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card rd-card p-4">
+                <h4 class="rd-title">Add a category</h4>
+
+                <form asp-action="AddCategory" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <input type="hidden" name="EventId" value="@ev.EventId" />
+
+                    <partial name="_CategoryFields" model="Model.NewCategory" />
+
+                    <button type="submit" class="btn rd-btn w-100">Add category</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
