@@ -1,0 +1,63 @@
+﻿@model List<ResultItem>
+@{
+    ViewData["Title"] = "My results";
+}
+
+<div class="container py-4">
+    <h1 class="rd-title">My results</h1>
+
+    @if (Model.Count == 0)
+    {
+        <div class="rd-notice">
+            <div class="rd-notice-icon">🏁</div>
+            <h2>No results yet</h2>
+            <p class="text-muted">After an event finishes, the organiser captures the finish times. Your race history will show up here.</p>
+            <a class="btn rd-btn" asp-controller="Participant" asp-action="Enrolments">See my enrolments</a>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Count completed @(Model.Count == 1 ? "race" : "races")</p>
+
+        <div class="card rd-card">
+            <div class="table-responsive">
+                <table class="table rd-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Finish time</th>
+                            <th>Position</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a class="text-decoration-none" asp-controller="Events" asp-action="Details" asp-route-id="@r.EventId">@r.EventName</a>
+                                </td>
+                                <td>@r.EventDate.ToString("dd MMM yyyy")</td>
+                                <td>@r.CategoryName</td>
+                                <td class="fw-semibold">@r.FinishTime?.ToString("c")</td>
+                                <td>
+                                    @if (r.Position is int position)
+                                    {
+                                        <span class="rd-position">@position.ToOrdinal()</span>
+                                        <span class="text-muted">out of @r.TotalFinishers</span>
+                                        @(position switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => "" })
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
