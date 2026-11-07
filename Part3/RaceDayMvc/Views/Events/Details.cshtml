@@ -1,0 +1,115 @@
+﻿@model EventDetailsViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.Name;
+
+    var role = Context.Session.GetRole();
+    var loggedIn = Context.Session.IsLoggedIn();
+    var categories = ev.Categories ?? new List<CategoryItem>();
+    var available = categories.Where(c => !Model.EnrolledCategoryIds.Contains(c.CategoryId)).ToList();
+    var icon = ev.EventType switch
+    {
+        "Cycle" => "🚴",
+        "Walk" => "🚶",
+        _ => "🏃"
+    };
+}
+
+<div class="container py-4">
+    <a asp-controller="Home" asp-action="Index" class="text-decoration-none">&larr; Back to events</a>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-7">
+            @if (!string.IsNullOrEmpty(ev.BannerUrl))
+            {
+                <img src="@ev.BannerUrl" class="rd-detail-banner" alt="Banner for @ev.Name" />
+            }
+            else
+            {
+                <div class="rd-detail-banner rd-banner-@ev.EventType.ToLower()">@icon</div>
+            }
+
+            <div class="mt-3">
+                <span class="rd-type-pill">@ev.EventType</span>
+                <h1 class="rd-title mt-2 mb-1">@ev.Name</h1>
+                <div class="rd-meta mb-3">
+                    📅 @ev.EventDate.ToString("dd MMM yyyy") &nbsp; 📍 @ev.Location &nbsp; 🏁 @ev.Distance.ToString("0.##") km
+                    &nbsp; 👤 Organised by @ev.OrganiserName
+                </div>
+                <p>@(string.IsNullOrWhiteSpace(ev.Description) ? "No description yet." : ev.Description)</p>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card rd-card p-4">
+                <h4 class="rd-title">Categories</h4>
+
+                @if (categories.Count == 0)
+                {
+                    <p class="text-muted mb-0">The organiser hasn't added any categories yet. Check back soon.</p>
+                }
+                else if (role == Roles.Participant)
+                {
+                    @if (available.Count == 0)
+                    {
+                        <div class="alert alert-success mb-3">You've entered every category in this event. 🎉</div>
+                        <a class="btn rd-btn-dark w-100" asp-controller="Participant" asp-action="Enrolments">See my enrolments</a>
+                    }
+                    else
+                    {
+                        <form asp-controller="Events" asp-action="Enrol" method="post">
+                            <input type="hidden" name="eventId" value="@ev.EventId" />
+
+                            <div class="list-group mb-3">
+                                @foreach (var c in categories)
+                                {
+                                    var entered = Model.EnrolledCategoryIds.Contains(c.CategoryId);
+                                    <label class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <input class="form-check-input me-2" type="radio" name="categoryId" value="@c.CategoryId" disabled="@entered" required />
+                                            <strong>@c.Name</strong>
+                                            <span class="rd-meta">@c.Distance.ToString("0.##") km</span>
+                                            @if (entered)
+                                            {
+                                                <span class="rd-status rd-status-confirmed ms-1">Entered</span>
+                                            }
+                                        </span>
+                                        <span class="fw-bold">R @c.Price.ToString("0.00")</span>
+                                    </label>
+                                }
+                            </div>
+
+                            <button type="submit" class="btn rd-btn w-100">Enter event</button>
+                        </form>
+                    }
+                }
+                else
+                {
+                    <div class="list-group mb-3">
+                        @foreach (var c in categories)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>@c.Name</strong>
+                                    <span class="rd-meta">@c.Distance.ToString("0.##") km</span>
+                                </span>
+                                <span class="fw-bold">R @c.Price.ToString("0.00")</span>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!loggedIn)
+                    {
+                        <a class="btn rd-btn w-100 mb-2" asp-controller="Account" asp-action="Login"
+                           asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">Log in to enter</a>
+                        <a class="btn rd-btn-dark w-100" asp-controller="Account" asp-action="Register">Create an account</a>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">You're logged in as an Organiser. Use a Participant account to enter events.</div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
