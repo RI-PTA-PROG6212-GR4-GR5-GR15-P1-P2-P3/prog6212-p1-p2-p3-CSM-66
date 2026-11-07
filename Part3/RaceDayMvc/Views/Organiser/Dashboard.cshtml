@@ -1,0 +1,86 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h1 class="rd-title mb-0">Organiser dashboard</h1>
+        <a class="btn rd-btn" asp-action="CreateEvent">+ New event</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="rd-stat">
+                <div class="rd-stat-number">@Model.TotalEvents</div>
+                <div class="rd-stat-label">Events created</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="rd-stat">
+                <div class="rd-stat-number">@Model.TotalEnrolments</div>
+                <div class="rd-stat-label">Total enrolments</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="rd-stat">
+                <div class="rd-stat-number">@Model.UpcomingCount</div>
+                <div class="rd-stat-label">Upcoming events</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="rd-stat">
+                <div class="rd-stat-number" style="font-size:2rem">@(Model.NextEvent?.EventDate.ToString("dd MMM yyyy") ?? "None yet")</div>
+                <div class="rd-stat-label">@(Model.NextEvent != null ? "Next: " + Model.NextEvent.Name : "Next event")</div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="rd-notice">
+            <div class="rd-notice-icon">🏁</div>
+            <h2>No events yet</h2>
+            <p class="text-muted">Create your first event and participants can start entering.</p>
+            <a class="btn rd-btn" asp-action="CreateEvent">Create an event</a>
+        </div>
+    }
+    else
+    {
+        <div class="card rd-card">
+            <div class="table-responsive">
+                <table class="table rd-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th class="text-center">Enrolments</th>
+                            <th>When</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ev in Model.Events.OrderBy(e => e.EventDate < DateTime.Today).ThenBy(e => e.EventDate))
+                        {
+                            var upcoming = ev.EventDate >= DateTime.Today;
+                            <tr>
+                                <td class="fw-semibold">@ev.Name</td>
+                                <td>@ev.EventDate.ToString("dd MMM yyyy")</td>
+                                <td>@ev.Location</td>
+                                <td><span class="rd-type-pill">@ev.EventType</span></td>
+                                <td class="text-center fw-bold">@(ev.TotalEnrolments ?? 0)</td>
+                                <td><span class="rd-status @(upcoming ? "rd-status-confirmed" : "rd-status-completed")">@(upcoming ? "Upcoming" : "Past")</span></td>
+                                <td class="text-end text-nowrap">
+                                    <a class="btn btn-sm rd-btn-dark" asp-action="Enrolments" asp-route-eventId="@ev.EventId">Enrolments</a>
+                                    <a class="btn btn-sm rd-btn" asp-action="Results" asp-route-eventId="@ev.EventId">Results</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

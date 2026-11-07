@@ -1,0 +1,74 @@
+﻿@model List<EventItem>
+@{
+    ViewData["Title"] = "My events";
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h1 class="rd-title mb-0">My events</h1>
+        <a class="btn rd-btn" asp-action="CreateEvent">+ New event</a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="rd-notice">
+            <div class="rd-notice-icon">🏁</div>
+            <h2>No events yet</h2>
+            <p class="text-muted">Create your first event and participants can start entering.</p>
+            <a class="btn rd-btn" asp-action="CreateEvent">Create an event</a>
+        </div>
+    }
+    else
+    {
+        <div class="card rd-card">
+            <div class="table-responsive">
+                <table class="table rd-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:100px"></th>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th class="text-center">Enrolments</th>
+                            <th class="text-end">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ev in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(ev.BannerUrl))
+                                    {
+                                        <img src="@ev.BannerUrl" class="rd-thumb" alt="Banner for @ev.Name" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rd-thumb rd-banner-@ev.EventType.ToLower()">@(ev.EventType == "Cycle" ? "🚴" : ev.EventType == "Walk" ? "🚶" : "🏃")</div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@ev.Name</div>
+                                    <div class="rd-meta">📍 @ev.Location &nbsp; 🏁 @ev.Distance.ToString("0.##") km</div>
+                                </td>
+                                <td>@ev.EventDate.ToString("dd MMM yyyy")</td>
+                                <td><span class="rd-type-pill">@ev.EventType</span></td>
+                                <td class="text-center fw-bold">@(ev.TotalEnrolments ?? 0)</td>
+                                <td class="text-end text-nowrap">
+                                    <a class="btn btn-sm rd-btn-dark" asp-action="EditEvent" asp-route-id="@ev.EventId">Edit</a>
+                                    <a class="btn btn-sm rd-btn-dark" asp-action="Categories" asp-route-eventId="@ev.EventId">Categories</a>
+                                    <a class="btn btn-sm rd-btn-dark" asp-action="Enrolments" asp-route-eventId="@ev.EventId">Enrolments</a>
+                                    <a class="btn btn-sm rd-btn-dark" asp-action="Results" asp-route-eventId="@ev.EventId">Results</a>
+                                    <form asp-action="DeleteEvent" asp-route-id="@ev.EventId" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this event? This cannot be undone.');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
