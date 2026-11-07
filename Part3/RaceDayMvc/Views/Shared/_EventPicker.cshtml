@@ -1,0 +1,23 @@
+﻿@model EventEnrolmentsViewModel
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "Enrolments";
+}
+
+<form method="get" asp-action="@action" class="rd-filter mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-9">
+            <label for="eventId" class="form-label">Event</label>
+            <select id="eventId" name="eventId" class="form-select" onchange="this.form.submit()">
+                @foreach (var item in Model.Events)
+                {
+                    <option value="@item.EventId" selected="@(item.EventId == Model.SelectedEventId)">
+                        @item.Name (@item.EventDate.ToString("dd MMM yyyy"))
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn rd-btn w-100">Show</button>
+        </div>
+    </div>
+</form>

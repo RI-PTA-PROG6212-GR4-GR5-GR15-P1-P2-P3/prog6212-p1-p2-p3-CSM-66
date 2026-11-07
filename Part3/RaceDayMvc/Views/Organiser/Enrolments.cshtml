@@ -1,0 +1,80 @@
+﻿@model EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Enrolments";
+    var ev = Model.SelectedEvent;
+}
+
+<div class="container py-4">
+    <h1 class="rd-title">Enrolments</h1>
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="rd-notice">
+            <div class="rd-notice-icon">🏁</div>
+            <h2>No events yet</h2>
+            <p class="text-muted">Create an event first, then you'll see who enters it here.</p>
+            <a class="btn rd-btn" asp-action="CreateEvent">Create an event</a>
+        </div>
+    }
+    else
+    {
+        <partial name="_EventPicker" model="Model" />
+
+        @if (ev != null)
+        {
+            <div class="mb-3">
+                <h4 class="mb-0">@ev.Name</h4>
+                <div class="rd-meta">📅 @ev.EventDate.ToString("dd MMM yyyy") &nbsp; 📍 @ev.Location &nbsp; 👥 <strong>@Model.Enrolments.Count</strong> enrolled</div>
+            </div>
+        }
+
+        @if (Model.Enrolments.Count == 0)
+        {
+            <div class="rd-notice">
+                <div class="rd-notice-icon">👟</div>
+                <h2>Nobody has entered yet</h2>
+                <p class="text-muted mb-0">When participants enter this event, they'll show up here with their category and status.</p>
+            </div>
+        }
+        else
+        {
+            <div class="card rd-card">
+                <div class="table-responsive">
+                    <table class="table rd-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Category</th>
+                                <th>Entered on</th>
+                                <th>Status</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var e in Model.Enrolments)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@e.ParticipantName</td>
+                                    <td>@e.CategoryName</td>
+                                    <td>@e.EnrolmentDate.ToString("dd MMM yyyy")</td>
+                                    <td><partial name="_StatusBadge" model="e.Status" /></td>
+                                    <td>
+                                        @if (e.ResultCaptured)
+                                        {
+                                            <span class="fw-semibold">#@e.Position</span>
+                                            <span class="text-muted">&nbsp;@e.FinishTime?.ToString("c")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not captured yet</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>
