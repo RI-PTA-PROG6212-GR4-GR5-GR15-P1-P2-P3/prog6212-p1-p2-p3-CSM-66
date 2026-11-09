@@ -36,8 +36,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    // in development the MVC container calls us over plain http, and a redirect to https would break that call
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
 app.UseSession();
 app.MapControllers();
 
