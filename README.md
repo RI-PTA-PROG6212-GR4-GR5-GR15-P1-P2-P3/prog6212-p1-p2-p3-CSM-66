@@ -294,4 +294,4 @@ The workflow `.github/workflows/part3-ci.yml` runs on every push. It checks the 
 
 An unlisted YouTube video demonstrating the full running application, the MVC structure, the Blob Storage integration and the Docker setup:
 
-**[Watch the video](YOUTUBE_LINK)**
+**[Watch the video](https://youtu.be/GV1SPzzy9Ck)**
