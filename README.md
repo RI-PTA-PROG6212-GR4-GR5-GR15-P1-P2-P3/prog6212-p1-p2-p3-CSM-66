@@ -159,3 +159,139 @@ The workflow `.github/workflows/part2-ci.yml` builds the API and runs all unit t
 An unlisted YouTube video demonstrating the running API, the code structure, the endpoints, authentication and the unit tests:
 
 **[Watch the video](https://youtu.be/3psF5NeXD8Y)**
+
+
+---
+
+# Part 3 - Automation of the Web Application
+
+Part 3 adds the web front end for RaceDay. An ASP.NET Core MVC application consumes the Part 2 API, Azure Blob Storage is integrated into the API for image uploads, and the MVC application runs in Docker. All of the Part 3 code is in the `Part3` folder:
+
+| Folder | What it is |
+|---|---|
+| `Part3/RaceDayMvc` | The ASP.NET Core MVC web application and its `Dockerfile` |
+| `Part3/RaceDayAPI` | The Part 2 API, extended for Part 3 (see "Changes to the API") |
+| `Part3/RaceDayAPI.Tests` | xUnit tests for the API |
+
+The `Part2` folder is untouched and still holds the Part 2 submission.
+
+## The Two Roles
+
+**Organiser** (menu: Dashboard, My Events, Enrolments, Results, Profile)
+- **Dashboard:** events created, total enrolments, upcoming events, the next event, and enrolments per event
+- **My Events:** create, edit and delete events (name, description, date, location, distance, type), with an event banner image upload
+- **Categories:** add, edit and delete age or distance categories for each event
+- **Enrolments:** see everyone who entered an event, with their category and status
+- **Results:** capture finish times and positions for enrolled participants
+
+**Participant** (menu: Events, My Enrolments, My Results, Profile)
+- **Events:** upcoming events with search, type and location filters
+- **Event details:** the banner, full details and categories, with **Enter event** to pick a category and enrol straight away
+- **My Enrolments:** every event they entered, with a colour-coded status (green Confirmed, blue Completed)
+- **My Results:** event, date, category, finish time and position, like "2nd out of 12"
+- **Profile:** update name and email, and upload a profile picture
+
+Visitors who aren't logged in can browse events and see event details, but need an account to enter.
+
+## How It Works
+
+**The MVC app only talks to the API.** It has no database access and no business logic. A single class, `ApiClient`, makes every call. Filtering, ownership checks, finisher totals and validation all happen in the API.
+
+**Session-based authentication.** On login the MVC app calls the API, then stores the user's ID, name and role in its own session, together with the API's session cookie. `ApiClient` sends that cookie on every later call, so the API's role and ownership checks apply to each user. The MVC session cookie has its own name, so it doesn't clash with the API's cookie on `localhost`.
+- A `RoleAuthorize` filter protects every page. Anonymous users are redirected to the login page, and users with the wrong role go to an access denied page.
+- The menu is different for each role.
+- Logging out clears both the MVC session and the API session.
+- If the API reports that the session ended, the user is sent back to the login page.
+
+**Azure Blob Storage, through the API only.** The MVC app sends the image file to the API. The API checks the size (5 MB), the type (JPG, PNG or WEBP) and the file header, uploads it to the `raceday-images` container, and saves the image URL in the database (`Events.BannerUrl` and `Participants.ProfilePictureUrl`). The MVC pages show the image from that URL. Only `BlobStorageService` in the API talks to Azure.
+
+**Friendly errors.** Invalid input shows validation messages. If the API can't be reached, users see a message instead of a raw error.
+
+**UI.** Bootstrap, with a sporting RaceDay theme (navy, orange and lime), the same layout and components on every page, and colour-coded enrolment statuses.
+
+## Changes to the API
+
+The `Part3/RaceDayAPI` copy adds what the front end needs:
+- `GET /api/events` accepts `search`, `type` and `location` filters
+- `GET /api/events/mine` returns the organiser's own events with enrolment totals
+- Results include `totalFinishers` (finishers in the same category) and the event date
+- Enrolments have the statuses `Confirmed` (when entered) and `Completed` (once a result is captured)
+- Event banner upload: `POST /api/events/{id}/banner`
+- Profile picture upload: `POST /api/participants/me/picture`
+- The database gained `BannerUrl` and `ProfilePictureUrl` columns, added with a migration
+
+## Setup and Run Instructions
+
+**Requirements:** the .NET 10 SDK, SQL Server (Express or LocalDB), Docker Desktop, and an Azure storage account (only needed for image uploads).
+
+**1. Clone the repository**
+```
+git clone <this repository's URL>
+cd <the repository folder>
+```
+
+**2. Set up the API database**
+
+Edit the `DefaultConnection` server in `Part3/RaceDayAPI/appsettings.json` to your own SQL Server instance, for example `(localdb)\MSSQLLocalDB`. Then create the database from the migrations:
+```
+dotnet tool install --global dotnet-ef
+dotnet ef database update --project Part3/RaceDayAPI
+```
+
+**3. Set up Azure Blob Storage** (skip this to run without image uploads; everything else still works)
+
+In the Azure portal, create a storage account, enable **Allow Blob anonymous access** on it, and create a container called `raceday-images` with the anonymous access level set to **Blob**. Then store the connection string as a user secret, which keeps it out of the repository:
+```
+dotnet user-secrets set "AzureBlob:ConnectionString" "<your connection string>" --project Part3/RaceDayAPI
+```
+
+**4. Run the API**
+```
+dotnet run --project Part3/RaceDayAPI --launch-profile https
+```
+The API listens on `https://localhost:7264` (with Swagger at `/swagger`) and on `http://0.0.0.0:5163`, which is the address the Docker container uses.
+
+**5. Run the MVC app locally** (in a second terminal)
+```
+dotnet run --project Part3/RaceDayMvc
+```
+Open the address that the command prints. In Visual Studio you can also set **both** `RaceDayAPI` and `RaceDayMvc` as startup projects and press run.
+
+**6. Create accounts**
+
+Use the Register page. Participants register freely. Registering as an **Organiser** needs the access code, which in development is `RaceDay-Organiser-2026` (set in `Part3/RaceDayAPI/appsettings.json`).
+
+## Docker
+
+The MVC app has a multi-stage `Dockerfile` in `Part3/RaceDayMvc`. The first stage uses the .NET SDK image to restore and publish. The second stage copies only the published output into the smaller ASP.NET runtime image, and runs as a non-root user. The package restore is a separate step so Docker can cache it.
+
+With the API running (step 4 above), build the image once and then start the container:
+```
+docker build -t raceday-mvc Part3/RaceDayMvc
+docker run --rm -p 8080:8080 --name raceday-mvc raceday-mvc
+```
+Then open **http://localhost:8080**. The container behaves the same as the locally run app.
+
+- The container reaches the API on the host through `http://host.docker.internal:5163/`. To point it somewhere else, add `-e Api__BaseUrl=<address of the API>/` to the `docker run` command.
+- On Linux, add `--add-host=host.docker.internal:host-gateway` to the `docker run` command.
+- Stop the container with `Ctrl+C`.
+- The container never needs the Azure connection string, because only the API talks to Azure.
+
+## Unit Tests
+
+The API has 80 xUnit tests in `Part3/RaceDayAPI.Tests`, covering registration and login, role enforcement on every protected endpoint, events, categories, enrolments, results, profiles, filtering and the dashboard totals. They use an in-memory database, so no SQL Server is needed.
+```
+dotnet test Part3/RaceDayAPI.Tests/RaceDayAPI.Tests.csproj
+```
+
+## CI/CD
+
+The workflow `.github/workflows/part3-ci.yml` runs on every push. It checks the repository structure, builds the API and the MVC app, runs all the unit tests, and builds the Docker image.
+
+![Part 3 CI/CD Build Success](docs/part3-ci-success.png)
+
+## Video Walkthrough
+
+An unlisted YouTube video demonstrating the full running application, the MVC structure, the Blob Storage integration and the Docker setup:
+
+**[Watch the video](YOUTUBE_LINK)**
