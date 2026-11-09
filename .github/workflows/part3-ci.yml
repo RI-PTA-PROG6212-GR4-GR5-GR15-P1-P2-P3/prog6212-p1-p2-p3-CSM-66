@@ -1,0 +1,41 @@
+name: Part 3 - Build, Test and Docker
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check the repository structure
+        run: |
+          for f in README.md Part3/RaceDayAPI/RaceDayAPI.csproj Part3/RaceDayMvc/RaceDayMvc.csproj Part3/RaceDayMvc/Dockerfile; do
+            if [ ! -f "$f" ]; then
+              echo "ERROR: $f is missing."
+              exit 1
+            fi
+            echo "Found $f"
+          done
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build the API
+        run: dotnet build Part3/RaceDayAPI/RaceDayAPI.csproj --configuration Release
+
+      - name: Build the MVC app
+        run: dotnet build Part3/RaceDayMvc/RaceDayMvc.csproj --configuration Release
+
+      - name: Run all unit tests
+        run: dotnet test Part3/RaceDayAPI.Tests/RaceDayAPI.Tests.csproj --configuration Release --verbosity normal
+
+      - name: Build the Docker image
+        run: docker build -t raceday-mvc Part3/RaceDayMvc
