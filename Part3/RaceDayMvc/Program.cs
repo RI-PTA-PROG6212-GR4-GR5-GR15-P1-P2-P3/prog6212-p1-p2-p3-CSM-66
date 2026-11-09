@@ -18,7 +18,8 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddHttpContextAccessor();
 
-// all data comes from the API, this app never touches the database or Azure
+// all data comes from the API, this app never touches the database or Azure.
+// the address can be overridden with the Api__BaseUrl environment variable, which is how Docker points it at the API
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
     var baseUrl = builder.Configuration["Api:BaseUrl"] ?? "https://localhost:7264/";
@@ -44,7 +45,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = new List<CultureInfo> { culture }
 });
 
-// friendly error pages instead of raw errors, same in development and in Docker
+// friendly error pages instead of raw errors, same locally and in Docker
 app.UseExceptionHandler("/Home/Error");
 app.UseStatusCodePagesWithReExecute("/Home/Status/{0}");
 
@@ -53,7 +54,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// inside the container we only listen on plain http, so there's no https port to redirect to
+if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
